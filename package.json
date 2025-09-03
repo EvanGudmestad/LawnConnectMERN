@@ -1,0 +1,33 @@
+{
+  "name": "lawnconnectmern",
+  "version": "1.0.0",
+  "description": "A Mern stack app to connect lawn care companies with individuals who want their lawns mowed",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "start-dev": "nodemon --env-file .env index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EvanGudmestad/LawnConnectMERN.git"
+  },
+  "keywords": [
+    "Lawn",
+    "Connect",
+    "Marketplace",
+    "Lawn",
+    "Care"
+  ],
+  "author": "Evan Gudmestad",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/EvanGudmestad/LawnConnectMERN/issues"
+  },
+  "homepage": "https://github.com/EvanGudmestad/LawnConnectMERN#readme",
+  "dependencies": {
+    "debug": "^4.4.1",
+    "express": "^5.1.0"
+  }
+}

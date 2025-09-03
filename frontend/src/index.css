@@ -1,0 +1,156 @@
+@import url("https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css");
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css");
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+Pro:wght@400;600&display=swap");
+
+/* Uber-inspired color scheme using CSS custom properties */
+:root {
+  --primary: #000000;
+  --primary-foreground: #ffffff;
+  --accent: #00b894;
+  --accent-foreground: #ffffff;
+  --background: #ffffff;
+  --foreground: #000000;
+  --muted: #f8f9fa;
+  --muted-foreground: #6c757d;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --border: #e9ecef;
+  --radius: 0.5rem;
+}
+
+/* Hero section with background image and overlay */
+.hero-section {
+  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url("/placeholder.svg?height=600&width=1200");
+  background-size: cover;
+  background-position: center;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  color: white;
+}
+
+/* Simple CSS animations */
+.fade-in {
+  animation: fadeIn 1s ease-in;
+}
+
+.slide-up {
+  animation: slideUp 0.8s ease-out;
+}
+
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Custom Bootstrap button styles with Uber colors */
+.btn-primary-custom {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  transition: all 0.3s ease;
+}
+
+.btn-primary-custom:hover {
+  background-color: #333;
+  border-color: #333;
+  transform: translateY(-2px);
+}
+
+.btn-accent-custom {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-foreground);
+  transition: all 0.3s ease;
+}
+
+.btn-accent-custom:hover {
+  background-color: #45a049;
+  border-color: #45a049;
+  transform: translateY(-2px);
+}
+
+/* Custom navbar styling */
+.navbar-custom {
+  background-color: var(--primary) !important;
+  transition: all 0.3s ease;
+}
+
+.navbar-custom .navbar-brand,
+.navbar-custom .nav-link {
+  color: var(--primary-foreground) !important;
+}
+
+.navbar-custom .nav-link:hover {
+  color: var(--accent) !important;
+}
+
+/* Service card styling */
+.service-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background-color: var(--card);
+  color: var(--card-foreground);
+  transition: all 0.3s ease;
+}
+
+/* Section backgrounds */
+.testimonial-section {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+}
+
+.footer-custom {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* Keyframe animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Utility classes for accent colors */
+.text-accent {
+  color: var(--accent) !important;
+}
+
+.bg-accent {
+  background-color: var(--accent) !important;
+}
+
+/* Body and font styling */
+body {
+  font-family: "Source Sans Pro", sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Playfair Display", serif;
+}
