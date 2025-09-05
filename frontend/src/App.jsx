@@ -8,7 +8,7 @@ function App() {
         <div className="container">
           <a className="navbar-brand fw-bold" href="#">
             <i className="bi bi-scissors me-2"></i>
-            LawnConnect
+            LawnConnect - Brody Was here!
           </a>
           <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span className="navbar-toggler-icon"></span>
@@ -358,23 +358,13 @@ function App() {
                 <li><a href="#" className="text-light opacity-75 text-decoration-none">Terms</a></li>
               </ul>
             </div>
-            <div className="col-lg-2 col-md-6">
-              <h6 className="fw-bold mb-3">Get the App</h6>
-              <div className="d-flex flex-column gap-2">
-                <a href="#" className="btn btn-outline-light btn-sm">
-                  <i className="bi bi-apple me-1"></i> App Store
-                </a>
-                <a href="#" className="btn btn-outline-light btn-sm">
-                  <i className="bi bi-google-play me-1"></i> Google Play
-                </a>
-              </div>
-            </div>
+           
           </div>
           <hr className="my-4 opacity-25" />
           <div className="row align-items-center">
             <div className="col-md-6">
               <p className="text-light opacity-75 mb-0">
-                © 2024 LawnConnect. All rights reserved.
+                © 2025 LawnConnect. All rights reserved.
               </p>
             </div>
             <div className="col-md-6 text-md-end">
