@@ -10,7 +10,7 @@ let jobs = [
   { id: '102', customerName: 'Jane Smith', address: '456 Oak Ave', description: 'One-time trimming and edging', status: 'completed' }
 ];
 
-router.get('/', (req, res) => {
+router.get('', (req, res) => {
   res.status(200).json(jobs);
 });
 

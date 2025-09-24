@@ -7,7 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "start-dev": "nodemon --env-file .env index.js"
+    "dev": "nodemon --env-file .env index.js"
   },
   "repository": {
     "type": "git",
@@ -27,7 +27,9 @@
   },
   "homepage": "https://github.com/EvanGudmestad/LawnConnectMERN#readme",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "debug": "^4.4.1",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "mongodb": "^6.20.0"
   }
 }
