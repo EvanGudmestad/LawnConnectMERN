@@ -1,6 +1,23 @@
+import { useEffect, useState } from 'react'
 import './App.css'
+import axios from 'axios';
 
 function App() {
+  let data;
+  const [users, setUsers] = useState([]);
+  
+  
+  useEffect(() => {
+    const fetchUsers = async () =>{
+      console.log(`Fetching users...`); 
+      const apiResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/users`);
+      console.log(`Fetched users: ${JSON.stringify(apiResponse.data)}`);
+      data = apiResponse.data;
+      setUsers(data);
+    }
+   fetchUsers();
+  }, []);
+
   return (
     <>
       {/* Navigation */}
@@ -43,9 +60,10 @@ function App() {
               <h1 className="display-4 fw-bold mb-4 slide-up">
                 Connect with Local <span className="text-accent">Lawn Care</span> Professionals
               </h1>
-              <p className="lead mb-4 slide-up">
-                Get your lawn mowed by trusted professionals in your area. Quick, reliable, and affordable lawn care services at your fingertips.
-              </p>
+             
+                {/* Get your lawn mowed by trusted professionals in your area. Quick, reliable, and affordable lawn care services at your fingertips. */}
+                {users.length > 0? <><ul>{users.map(user => <li key={user._id}>{user.email}</li>)}</ul></> : <span>No users found.</span>}
+            
               <div className="d-flex flex-column flex-sm-row gap-3 slide-up">
                 <button className="btn btn-accent-custom btn-lg px-4">
                   <i className="bi bi-search me-2"></i>
