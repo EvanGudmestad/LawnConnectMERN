@@ -6,7 +6,6 @@ const debugIndex = debug('app:index');
 import cors from 'cors';
 const port = process.env.PORT || 8080;
 
-//ping();
 
 app.use(express.urlencoded({ extended: true })); 
 app.use(express.json());

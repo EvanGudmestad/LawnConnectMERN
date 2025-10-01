@@ -43,7 +43,7 @@ async function getUserByEmail(email){
 
 async function updateUser(userId, updatedUser){
   const db = await connectToDatabase();
-  const result = await db.collection('Users').updateOne({_id: new ObjectId(userId)}, {$set: updatedUser});
+  const result = await db.collection('Users').updateOne({_id: userId}, {$set: updatedUser});
   return result;
 }
 
