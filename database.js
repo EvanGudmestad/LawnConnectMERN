@@ -24,9 +24,19 @@ async function ping(){
   debugDb(`Ping:, ${JSON.stringify(pong)}`);
 }
 
-async function getUsers(){
+async function getUsers(filter, sort, limit=0, skip = 0){
   const db = await connectToDatabase();
-  return db.collection('Users').find({}).toArray();
+  debugDb(`Filter: ${JSON.stringify(filter)}`);
+  let query =  db.collection('Users').find(filter).sort(sort);
+  
+  if (skip > 0) {
+    query = query.skip(skip);
+  }
+  
+  if (limit > 0) {
+    query = query.limit(limit);
+  }
+  return query.toArray();
 }
 
 async function addUser(user){

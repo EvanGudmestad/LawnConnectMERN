@@ -7,7 +7,7 @@ const registerSchema = Joi.object({
   confirmPassword: Joi.string().valid(Joi.ref('password')).required(),
   role: Joi.string().valid('customer', 'provider').required(),
   profile: Joi.object().optional(),
-  createdAt: Joi.date().required()
+  createdAt: Joi.date().optional()
 }).required();
 
 const updateUserSchema = Joi.object({

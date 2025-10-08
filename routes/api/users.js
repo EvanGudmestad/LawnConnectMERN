@@ -10,7 +10,49 @@ import {validId} from '../../middleware/validId.js';
 const router = express.Router();
 
 router.get('', async (req, res) => {
-  const users = await getUsers();
+  const {keywords, role, minAge, maxAge, page, limit, sortBy} = req.query;
+
+
+  debugUsers(`Sort By is ${sortBy}`);
+
+  // Handle pagination parameters
+  const pageNum = parseInt(page) || 1;
+  const limitNum = parseInt(limit) || 0; // 0 means no limit
+  const skip = limitNum > 0 ? (pageNum - 1) * limitNum : 0;
+
+  //debugUsers(`Query Params - keywords: ${keywords}, role: ${role}, minAge: ${minAge}, maxAge: ${maxAge}`);
+  //Build a query filter
+  const filter = {};
+
+  if(keywords) filter.$text = {$search: keywords};  
+  if(role) filter.role = role;
+
+  
+  // Handle date filtering with simpler approach
+  if(minAge || maxAge) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const dateFilter = {};
+
+    if(maxAge) dateFilter.$gte = new Date(today.getTime() - maxAge * 24 * 60 * 60 * 1000); //Records must be newer than maxAge days
+    if(minAge) dateFilter.$lte = new Date(today.getTime() - minAge * 24 * 60 * 60 * 1000); //Records must be older than minAge days
+
+    filter.createdAt = dateFilter;
+  }
+
+  const sortOptions = {
+     email: { email: 1 },
+     createdAt: { createdAt: 1 },
+     role: { role: 1 }
+  };
+  const sort = sortOptions[sortBy] || {role:-1}; // Default to no sorting if sortBy is not provided or invalid
+ 
+  
+
+  debugUsers(`Sort is ${JSON.stringify(sort)}`);
+
+  const users = await getUsers(filter, sort, limitNum, skip); 
   if (!users) {
     res.status(500).send('Error retrieving users');
   }else{
@@ -28,7 +70,7 @@ router.post('', validate(registerSchema), async (req, res) => {
 
   const today = new Date();
 
-  newUser.createdAt = today.toLocaleDateString();
+  newUser.createdAt = today;
   newUser.password = await bcrypt.hash(newUser.password, 10);
   const result = await addUser(newUser);
   if (result.insertedId) {
