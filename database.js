@@ -70,9 +70,14 @@ async function getClient(){
   return _client;
 }
 
-// Add this function to get the database object
 async function getDatabase(){
   return await connectToDatabase();
 }
 
-export {ping, getUsers, addUser, getUserByEmail, updateUser, deleteUser, getClient, getDatabase};
+async function saveAuditLog(log){
+  const db = await connectToDatabase();
+  const dbResult = await db.collection('AuditLog').insertOne(log);
+  return dbResult;
+}
+
+export {ping, getUsers, addUser, getUserByEmail, updateUser, deleteUser, getClient, getDatabase, saveAuditLog};

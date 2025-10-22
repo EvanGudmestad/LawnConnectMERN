@@ -1,5 +1,6 @@
 import express from 'express';
 import { isAuthenticated } from '../../middleware/isAuthenticated.js';
+import { saveAuditLog } from '../../database.js';
 import debug from 'debug';
 const debugJob = debug('app:job');
 
@@ -11,14 +12,16 @@ let jobs = [
 ];
 
 router.get('', isAuthenticated, (req, res) => {
+ 
   res.status(200).json(jobs);
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', isAuthenticated, (req, res) => {
   const job = jobs.find(j => j.id === req.params.id);
   if (!job) {
     return res.status(404).send('Job not found.');
   }
+  
   res.status(200).json(job);
 });
 
@@ -41,12 +44,19 @@ router.put('/:id', (req, res) => {
   res.status(200).json(jobs[jobIndex]);
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', isAuthenticated,(req, res) => {
   const initialLength = jobs.length;
   jobs = jobs.filter(j => j.id !== req.params.id);
   if (jobs.length === initialLength) {
     return res.status(404).send('Job not found.');
   }
+  const logEntry = {
+    timeStamp: new Date(),
+    operation:"delete",
+    jobId: req.params.id,
+    performedBy: req.user.email
+  }
+  saveAuditLog(logEntry);
   res.status(200).send('Job deleted successfully.');
 });
 
