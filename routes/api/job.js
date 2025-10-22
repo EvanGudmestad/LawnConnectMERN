@@ -1,5 +1,5 @@
 import express from 'express';
-
+import { isAuthenticated } from '../../middleware/isAuthenticated.js';
 import debug from 'debug';
 const debugJob = debug('app:job');
 
@@ -10,7 +10,7 @@ let jobs = [
   { id: '102', customerName: 'Jane Smith', address: '456 Oak Ave', description: 'One-time trimming and edging', status: 'completed' }
 ];
 
-router.get('', (req, res) => {
+router.get('', isAuthenticated, (req, res) => {
   res.status(200).json(jobs);
 });
 

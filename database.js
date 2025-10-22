@@ -4,7 +4,7 @@ const debugDb = debug("app:Database");
 
 
 let _db = null;
-
+let _client = null; 
 
 async function connectToDatabase(){
   if(!_db){
@@ -63,4 +63,16 @@ async function deleteUser(userId){
   return result;
 }
 
-export {ping, getUsers, addUser, getUserByEmail, updateUser, deleteUser};
+async function getClient(){
+  if(!_client){
+    await connectToDatabase(); // This will create the client if it doesn't exist
+  }
+  return _client;
+}
+
+// Add this function to get the database object
+async function getDatabase(){
+  return await connectToDatabase();
+}
+
+export {ping, getUsers, addUser, getUserByEmail, updateUser, deleteUser, getClient, getDatabase};
