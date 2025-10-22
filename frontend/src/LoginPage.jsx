@@ -14,6 +14,8 @@ export default function LoginPage(){
       // console.log("Login successful:", res);
       if(res.error) {
         console.error("Login error:", res.error.message);
+      }else{
+        console.log(`Login successful! ${JSON.stringify(res)}`);
       }
        }
         catch (error) {
