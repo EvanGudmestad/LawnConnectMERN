@@ -6,6 +6,7 @@ import bcrypt from 'bcrypt';
 import { registerSchema, updateUserSchema } from '../../validation/userSchema.js';
 import { validate } from '../../middleware/joiValidator.js';
 import {validId} from '../../middleware/validId.js';
+import { isAuthenticated } from '../../middleware/isAuthenticated.js';
 
 const router = express.Router();
 
@@ -58,6 +59,10 @@ router.get('', async (req, res) => {
   }else{
     res.status(200).json(users);
   }
+});
+
+router.get('/me', isAuthenticated, async (req, res) => {
+  res.status(200).json(req.user);
 });
 
 router.post('', validate(registerSchema), async (req, res) => {

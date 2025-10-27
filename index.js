@@ -25,7 +25,7 @@ app.use(express.static('frontend/dist'));
 app.all("/api/auth/*splat", toNodeHandler(auth));
 app.use('/api/companies',(await import('./routes/api/company.js')).companyRouter);
 app.use('/api/jobs', (await import('./routes/api/job.js')).jobRouter);
-//app.use('/api/users', (await import('./routes/api/users.js')).usersRouter);
+app.use('/api/users', (await import('./routes/api/users.js')).usersRouter);
 
 app.listen(port, () => {
   debugIndex(`Example app listening on port http://localhost:${port}`)

@@ -26,8 +26,8 @@ async function ping(){
 
 async function getUsers(filter, sort, limit=0, skip = 0){
   const db = await connectToDatabase();
-  debugDb(`Filter: ${JSON.stringify(filter)}`);
-  let query =  db.collection('Users').find(filter).sort(sort);
+ // debugDb(`Filter: ${JSON.stringify(filter)}`);
+  let query =  db.collection('user').find(filter).sort(sort);
   
   if (skip > 0) {
     query = query.skip(skip);
