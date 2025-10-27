@@ -2,6 +2,8 @@ import express from 'express';
 import { isAuthenticated } from '../../middleware/isAuthenticated.js';
 import { saveAuditLog } from '../../database.js';
 import debug from 'debug';
+import { hasRole } from '../../middleware/hasRole.js';
+import { hasPermission, hasAnyPermission } from '../../middleware/hasPermissions.js';
 const debugJob = debug('app:job');
 
 const router = express.Router();
@@ -11,7 +13,7 @@ let jobs = [
   { id: '102', customerName: 'Jane Smith', address: '456 Oak Ave', description: 'One-time trimming and edging', status: 'completed' }
 ];
 
-router.get('', isAuthenticated, (req, res) => {
+router.get('', isAuthenticated, hasAnyPermission(['canViewJob', 'canDeleteJob']), (req, res) => {
  
   res.status(200).json(jobs);
 });

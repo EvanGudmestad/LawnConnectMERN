@@ -3,7 +3,6 @@ import {auth} from '../auth.js';
 
 export async function isAuthenticated(req,res,next){
   try{
-   
     const session = await auth.api.getSession({headers: req.headers});
    
     if(!session){
@@ -14,6 +13,7 @@ export async function isAuthenticated(req,res,next){
     }
 
     req.user = session.user;
+    console.log(`Req User: ${JSON.stringify(req.user)}`);
     req.session = session.session;
     next();
   }catch(err){
