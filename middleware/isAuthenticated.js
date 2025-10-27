@@ -13,7 +13,6 @@ export async function isAuthenticated(req,res,next){
     }
 
     req.user = session.user;
-    console.log(`Req User: ${JSON.stringify(req.user)}`);
     req.session = session.session;
     next();
   }catch(err){
