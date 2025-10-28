@@ -22,6 +22,7 @@ app.use(express.static('frontend/dist'));
 //Registration: POST /api/auth/sign-up/email
 //Get Session: GET /api/auth/get-session
 //Logout: POST /api/auth/sign-out
+//Sign in with Google: POST /api/auth/sign-in/social
 app.all("/api/auth/*splat", toNodeHandler(auth));
 app.use('/api/companies',(await import('./routes/api/company.js')).companyRouter);
 app.use('/api/jobs', (await import('./routes/api/job.js')).jobRouter);

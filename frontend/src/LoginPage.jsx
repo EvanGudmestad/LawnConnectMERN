@@ -1,4 +1,3 @@
-
 import { useState } from "react"
 import { authClient } from "./auth-client.js"; 
 
@@ -6,6 +5,7 @@ export default function LoginPage(){
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
 
   const handleSubmit = async (e) => {
        e.preventDefault();
@@ -22,6 +22,59 @@ export default function LoginPage(){
    console.error("Login failed:", error.response?.data || error.message);
   }
   }
+
+
+
+async function handleGoogleSignIn() {
+    // You would typically use a pre-configured client instance here:
+    // import { authClient } from "./auth-client";
+    // await authClient.signIn.social({ provider: "google" });
+
+    // Since we are simulating, we make a direct call that triggers the OAuth flow.
+    const signInEndpoint = "/api/auth/sign-in/social";
+    const callbackURL = `${window.location.origin}/dashboard`; // post-login URL in your app
+
+    // Construct the request body
+    const requestBody = {
+        provider: "google",
+        callbackURL: callbackURL 
+    };
+
+    try {
+      setIsGoogleLoading(true);
+      const response = await fetch(signInEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      });
+
+      // If server really sent a 302 (rare with fetch), handle it
+      if (response.redirected && response.url) {
+        window.location.href = response.url;
+        return;
+      }
+
+      // Most Better Auth setups return JSON { url, redirect: true }
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const result = await response.json();
+        if ((result.redirect || result.url) && result.url) {
+          window.location.href = result.url;
+          return;
+        }
+        throw new Error(result.error?.message || 'Unknown error');
+      } else {
+        const text = await response.text();
+        throw new Error(text || 'Unknown error');
+      }
+    } catch (error) {
+      console.error("Network or fetch error:", error);
+      alert(`Sign-in failed: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsGoogleLoading(false);
+    }
+}
+
 
 
   return(
@@ -120,6 +173,42 @@ export default function LoginPage(){
               Sign in
             </button>
           </form>
+
+          {/* Divider */}
+          <div className="d-flex align-items-center my-3">
+            <div style={{ height: 1, backgroundColor: "#e0e0e0", flex: 1 }} />
+            <span className="mx-2 text-muted small">or</span>
+            <div style={{ height: 1, backgroundColor: "#e0e0e0", flex: 1 }} />
+          </div>
+
+          {/* Google sign-in */}
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={isGoogleLoading}
+            className="btn w-100 fw-semibold d-flex align-items-center justify-content-center"
+            style={{
+              backgroundColor: "#ffffff",
+              color: "#000000",
+              padding: "0.75rem",
+              border: "1px solid #e0e0e0",
+            }}
+          >
+            {/* Google G icon (SVG) */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 533.5 544.3"
+              width="20"
+              height="20"
+              style={{ marginRight: 8 }}
+            >
+              <path fill="#EA4335" d="M533.5 278.4c0-18.5-1.6-37.1-5-55.1H272.1v104.4h147c-6.3 33.9-25.8 62.6-55 81.7v67.7h88.8c52-47.9 80.6-118.5 80.6-198.7z"/>
+              <path fill="#34A853" d="M272.1 544.3c72.9 0 134.3-24.1 179-65.6l-88.8-67.7c-24.7 16.6-56.4 26.2-90.2 26.2-69.3 0-128-46.8-149-109.6h-92.6v68.8c44.8 88.9 137.1 147.9 241.6 147.9z"/>
+              <path fill="#4A90E2" d="M123.1 327.6c-10.5-31.4-10.5-65.9 0-97.3v-68.8H30.5c-42.8 84.9-42.8 182.3 0 267.2l92.6-68.8z"/>
+              <path fill="#FBBC05" d="M272.1 106.9c38.5-.6 75.7 13.4 104.2 39.4l77.5-77.5C404.3 24.3 339.3-1.1 272.1 0 167.6 0 75.3 59 30.5 147.9l92.6 68.8C144.1 153.9 202.8 106.9 272.1 106.9z"/>
+            </svg>
+            {isGoogleLoading ? "Redirecting…" : "Sign in with Google"}
+          </button>
 
           <div className="text-center mt-4">
             <p className="small text-muted mb-0">
