@@ -28,13 +28,42 @@ export const auth = betterAuth({
     user: {
         additionalFields: {
             role: {
-                type: "object", // MongoDB stores arrays as objects
+                type: "json",
                 required: false,
                  defaultValue: ["customer"]
             },
             profile: {
-                type: "object",
+                type: "json",
                 required: false,
+                defaultValue: {}
+                /* Polymorphic structure based on role:
+                 * For CUSTOMER:
+                 * {
+                 *   firstName: string,
+                 *   lastName: string,
+                 *   phone: string,
+                 *   avatar: string,
+                 *   address_history: [{ address, city, state, zip, isDefault, addedAt }],
+                 *   preferences: { notifications, newsletter },
+                 *   saved_providers: [ObjectId]
+                 * }
+                 * 
+                 * For PROVIDER:
+                 * {
+                 *   firstName: string,
+                 *   lastName: string,
+                 *   phone: string,
+                 *   avatar: string,
+                 *   company_name: string (required),
+                 *   bio: string,
+                 *   stripe_connect_account_id: string (critical for payments),
+                 *   services: [ObjectId],
+                 *   service_area: [{ city, state, radius }],
+                 *   rating: number,
+                 *   total_reviews: number,
+                 *   verified: boolean
+                 * }
+                 */
             }
         }
     }

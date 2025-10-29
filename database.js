@@ -87,4 +87,42 @@ async function saveAuditLog(log){
   return dbResult;
 }
 
-export {ping, getUsers, addUser, getUserByEmail, updateUser, deleteUser, getClient, getDatabase, saveAuditLog, getUserById};
+async function getServices(filter = {}, sort = {}, limit = 0, skip = 0) {
+  const db = await connectToDatabase();
+  let query = db.collection('service').find(filter).sort(sort);
+
+  if (skip > 0) {
+    query = query.skip(skip);
+  }
+  if (limit > 0) {
+    query = query.limit(limit);
+  }
+
+  return query.toArray();
+}
+
+async function getServiceById(serviceId) {
+  const db = await connectToDatabase();
+  const _id = typeof serviceId === 'string' ? new ObjectId(serviceId) : serviceId;
+  return db.collection('service').findOne({ _id });
+}
+
+async function addService(service) {
+  const db = await connectToDatabase();
+  service._id = new ObjectId();
+  return db.collection('service').insertOne(service);
+}
+
+async function updateService(serviceId, updatedService) {
+  const db = await connectToDatabase();
+  const _id = typeof serviceId === 'string' ? new ObjectId(serviceId) : serviceId;
+  return db.collection('service').updateOne({ _id }, { $set: updatedService });
+}
+
+async function deleteService(serviceId) {
+  const db = await connectToDatabase();
+  const _id = typeof serviceId === 'string' ? new ObjectId(serviceId) : serviceId;
+  return db.collection('service').deleteOne({ _id });
+}
+
+export {ping, getUsers, addUser, getUserByEmail, updateUser, deleteUser, getClient, getDatabase, saveAuditLog, getUserById, getServices, getServiceById, addService, updateService, deleteService};
