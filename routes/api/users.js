@@ -1,5 +1,5 @@
 import express from 'express';
-import {getUsers, addUser, getUserByEmail, updateUser, deleteUser} from  '../../database.js';
+import {getUsers, addUser, getUserByEmail, updateUser, deleteUser, getUserById} from  '../../database.js';
 import debug from 'debug';
 const debugUsers = debug('app:users');
 import bcrypt from 'bcrypt';
@@ -7,6 +7,8 @@ import { registerSchema, updateUserSchema } from '../../validation/userSchema.js
 import { validate } from '../../middleware/joiValidator.js';
 import {validId} from '../../middleware/validId.js';
 import { isAuthenticated } from '../../middleware/isAuthenticated.js';
+import {ObjectId} from 'mongodb';
+ 
 
 const router = express.Router();
 
@@ -14,7 +16,6 @@ router.get('', async (req, res) => {
   const {keywords, role, minAge, maxAge, page, limit, sortBy} = req.query;
 
 
-  debugUsers(`Sort By is ${sortBy}`);
 
   // Handle pagination parameters
   const pageNum = parseInt(page) || 1;
@@ -62,8 +63,18 @@ router.get('', async (req, res) => {
 });
 
 router.get('/me', isAuthenticated, async (req, res) => {
+  debugUsers(`Fetching current authenticated user: ${JSON.stringify(req.user)}`);
   res.status(200).json(req.user);
 });
+router.get('/:id', validId('id'), async (req, res) => {
+  const userId = req.id; //Object Id
+  const user = await getUserById(userId);
+  if (!user) {
+    return res.status(404).json({message: 'User not found'});
+  }
+  res.status(200).json(user);
+});
+
 
 router.post('', validate(registerSchema), async (req, res) => {
   const newUser = req.body;
@@ -101,10 +112,12 @@ router.post('/login',async (req,res) =>{
 
 })
 
-router.patch('/:id', validate(updateUserSchema), validId('id'), async (req, res) => {
-  const userId = req.id //Object Id
+router.patch('/me', isAuthenticated, async (req, res) => {
+  const userId = new ObjectId(req.user.id);
   const updatedData = req.body;
   debugUsers(`Updating user with ID: ${userId} with data: ${JSON.stringify(updatedData)}`);
+  updatedData.lastUpdatedOn = new Date();
+  updatedData.lastUpdatedBy = req.user ? req.user.email : 'self';
   const result = await updateUser(userId, updatedData);
   debugUsers(`Update result: ${JSON.stringify(result)}`);
   if (result.modifiedCount === 1) {
@@ -114,8 +127,22 @@ router.patch('/:id', validate(updateUserSchema), validId('id'), async (req, res)
   }
 });
 
-router.delete('/:id', async (req,res) => {
- const userId = req.params.id;
+
+router.patch('/:id', validId('id'), async (req, res) => {
+  const userId = req.id //Object Id
+  const updatedData = req.body;
+  debugUsers(`Updating user with IDD: ${userId} with data: ${JSON.stringify(updatedData)}`);
+  const result = await updateUser(userId, updatedData);
+  debugUsers(`Update result: ${JSON.stringify(result)}`);
+  if (result.modifiedCount === 1) {
+    res.status(200).json({message: 'User updated successfully'});
+  } else {
+    res.status(404).json({message: 'User not updated'});
+  }
+});
+
+router.delete('/:id', validId('id'), async (req,res) => {
+ const userId = req.id;
  const results = await deleteUser(userId);
  if (results.deletedCount === 1) {
    res.status(200).json({message: 'User deleted successfully'});

@@ -13,8 +13,8 @@ let jobs = [
   { id: '102', customerName: 'Jane Smith', address: '456 Oak Ave', description: 'One-time trimming and edging', status: 'completed' }
 ];
 
-router.get('', isAuthenticated, hasAnyPermission(['canViewJob', 'canDeleteJob']), (req, res) => {
- 
+router.get('', isAuthenticated, (req, res) => {
+  debugJob('Fetching all jobs');
   res.status(200).json(jobs);
 });
 

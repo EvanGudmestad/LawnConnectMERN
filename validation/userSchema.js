@@ -5,7 +5,7 @@ const registerSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().required(),
   confirmPassword: Joi.string().valid(Joi.ref('password')).required(),
-  role: Joi.string().valid('customer', 'provider').required(),
+  role: Joi.string().valid('customer', 'admin').required(),
   profile: Joi.object().optional(),
   createdAt: Joi.date().optional()
 }).required();
@@ -14,7 +14,7 @@ const updateUserSchema = Joi.object({
   email: Joi.string().email().optional(),
   password: Joi.string().optional(),
   confirmPassword: Joi.string().valid(Joi.ref('password')).optional(),
-  role: Joi.string().valid('customer', 'provider').optional(),
+  role: Joi.string().valid('customer', 'admin').optional(),
   profile: Joi.object().optional(),
   createdAt: Joi.date().optional()
 }).min(1).required();

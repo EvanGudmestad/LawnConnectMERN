@@ -39,27 +39,34 @@ async function getUsers(filter, sort, limit=0, skip = 0){
   return query.toArray();
 }
 
+async function getUserById(userId){
+  const db = await connectToDatabase();
+  const user = await db.collection('user').findOne(userId);
+  return user;
+}
+
 async function addUser(user){
   const db = await connectToDatabase();
   user._id = new ObjectId();
-  return db.collection('Users').insertOne(user);
+  return db.collection('user').insertOne(user);
 }
 
 async function getUserByEmail(email){
   const db = await connectToDatabase();
-  const user = await db.collection('Users').findOne({email: email});
+  const user = await db.collection('user').findOne({email: email});
   return user;
 }
 
 async function updateUser(userId, updatedUser){
   const db = await connectToDatabase();
-  const result = await db.collection('Users').updateOne({_id: userId}, {$set: updatedUser});
+  debugDb(`Updating user ${userId} with data: ${JSON.stringify(updatedUser)}`);
+  const result = await db.collection('user').updateOne({_id: userId}, {$set: updatedUser});
   return result;
 }
 
 async function deleteUser(userId){
   const db = await connectToDatabase();
-  const result = await db.collection('Users').deleteOne({_id: new ObjectId(userId)});
+  const result = await db.collection('user').deleteOne({_id: new ObjectId(userId)});
   return result;
 }
 
@@ -80,4 +87,4 @@ async function saveAuditLog(log){
   return dbResult;
 }
 
-export {ping, getUsers, addUser, getUserByEmail, updateUser, deleteUser, getClient, getDatabase, saveAuditLog};
+export {ping, getUsers, addUser, getUserByEmail, updateUser, deleteUser, getClient, getDatabase, saveAuditLog, getUserById};

@@ -30,6 +30,7 @@ export const auth = betterAuth({
             role: {
                 type: "object", // MongoDB stores arrays as objects
                 required: false,
+                 defaultValue: ["customer"]
             },
             profile: {
                 type: "object",
