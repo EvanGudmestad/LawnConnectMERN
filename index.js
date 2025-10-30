@@ -1,7 +1,6 @@
 import express from 'express';
 const app = express();
 import debug from 'debug';
-import {ping} from './database.js';
 const debugIndex = debug('app:index');
 import cors from 'cors';
 const port = process.env.PORT || 8080;
@@ -24,10 +23,12 @@ app.use(express.static('frontend/dist'));
 //Logout: POST /api/auth/sign-out
 //Sign in with Google: POST /api/auth/sign-in/social
 app.all("/api/auth/*splat", toNodeHandler(auth));
-app.use('/api/companies',(await import('./routes/api/company.js')).companyRouter);
+
 app.use('/api/jobs', (await import('./routes/api/job.js')).jobRouter);
 app.use('/api/users', (await import('./routes/api/users.js')).usersRouter);
 app.use('/api/services', (await import('./routes/api/service.js')).serviceRouter);
+app.use('/api/transactions', (await import('./routes/api/transaction.js')).transactionRouter);
+app.use('/api/job-applications', (await import('./routes/api/jobApplication.js')).jobApplicationRouter);
 
 app.listen(port, () => {
   debugIndex(`Example app listening on port http://localhost:${port}`)

@@ -1,66 +1,96 @@
 import express from 'express';
 import { isAuthenticated } from '../../middleware/isAuthenticated.js';
-import { saveAuditLog } from '../../database.js';
+import { 
+  saveAuditLog, 
+  getAllJobs,
+  getJobById,
+  createJob,
+  updateJob,
+  deleteJob
+} from '../../database.js';
 import debug from 'debug';
-import { hasRole } from '../../middleware/hasRole.js';
-import { hasPermission, hasAnyPermission } from '../../middleware/hasPermissions.js';
 const debugJob = debug('app:job');
 
 const router = express.Router();
 
-let jobs = [
-  { id: '101', customerName: 'John Doe', address: '123 Main St', description: 'Weekly lawn mowing', status: 'pending' },
-  { id: '102', customerName: 'Jane Smith', address: '456 Oak Ave', description: 'One-time trimming and edging', status: 'completed' }
-];
-
-router.get('', isAuthenticated, (req, res) => {
-  debugJob('Fetching all jobs');
-  res.status(200).json(jobs);
-});
-
-router.get('/:id', isAuthenticated, (req, res) => {
-  const job = jobs.find(j => j.id === req.params.id);
-  if (!job) {
-    return res.status(404).send('Job not found.');
+// Get all jobs
+router.get('', isAuthenticated, async (req, res) => {
+  try {
+    debugJob('Fetching all jobs');
+    const jobs = await getAllJobs();
+    res.status(200).json(jobs);
+  } catch (error) {
+    debugJob('Error fetching jobs:', error);
+    res.status(500).json({ error: 'Failed to fetch jobs' });
   }
-  
-  res.status(200).json(job);
 });
 
-router.post('/', (req, res) => {
-  const newJob = {
-    id: (jobs.length + 101).toString(),
-    ...req.body,
-    status: 'pending'
-  };
-  jobs.push(newJob);
-  res.status(201).json(newJob);
-});
-
-router.put('/:id', (req, res) => {
-  const jobIndex = jobs.findIndex(j => j.id === req.params.id);
-  if (jobIndex === -1) {
-    return res.status(404).send('Job not found.');
+// Get job by ID
+router.get('/:id', isAuthenticated, async (req, res) => {
+  try {
+    const job = await getJobById(req.params.id);
+    
+    if (!job) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+    
+    res.status(200).json(job);
+  } catch (error) {
+    debugJob('Error fetching job:', error);
+    res.status(500).json({ error: 'Failed to fetch job' });
   }
-  jobs[jobIndex] = { ...jobs[jobIndex], ...req.body };
-  res.status(200).json(jobs[jobIndex]);
 });
 
-router.delete('/:id', isAuthenticated,(req, res) => {
-  const initialLength = jobs.length;
-  jobs = jobs.filter(j => j.id !== req.params.id);
-  if (jobs.length === initialLength) {
-    return res.status(404).send('Job not found.');
+// Create new job
+router.post('/', isAuthenticated, async (req, res) => {
+  try {
+    const createdJob = await createJob(req.body);
+    res.status(201).json(createdJob);
+  } catch (error) {
+    debugJob('Error creating job:', error);
+    res.status(500).json({ error: 'Failed to create job' });
   }
-  const logEntry = {
-    timeStamp: new Date(),
-    operation:"delete",
-    jobId: req.params.id,
-    performedBy: req.user.email
-  }
-  saveAuditLog(logEntry);
-  res.status(200).send('Job deleted successfully.');
 });
 
+// Update job
+router.put('/:id', isAuthenticated, async (req, res) => {
+  try {
+    const result = await updateJob(req.params.id, req.body);
+    
+    if (!result.value) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+    
+    res.status(200).json(result.value);
+  } catch (error) {
+    debugJob('Error updating job:', error);
+    res.status(500).json({ error: 'Failed to update job' });
+  }
+});
 
-export {router as jobRouter};
+// Delete job
+router.delete('/:id', isAuthenticated, async (req, res) => {
+  try {
+    const result = await deleteJob(req.params.id);
+    
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+    
+    const logEntry = {
+      timeStamp: new Date(),
+      operation: "delete",
+      collection: "jobs",
+      documentId: req.params.id,
+      performedBy: req.user.email
+    };
+    await saveAuditLog(logEntry);
+    
+    res.status(200).json({ message: 'Job deleted successfully' });
+  } catch (error) {
+    debugJob('Error deleting job:', error);
+    res.status(500).json({ error: 'Failed to delete job' });
+  }
+});
+
+export { router as jobRouter };

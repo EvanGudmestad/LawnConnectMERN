@@ -125,4 +125,149 @@ async function deleteService(serviceId) {
   return db.collection('service').deleteOne({ _id });
 }
 
+// Transaction database functions
+export const getAllTransactions = async () => {
+  const db = await connectToDatabase();
+  return await db.collection('transaction').find({}).toArray();
+};
+
+export const getTransactionsByJobId = async (jobId) => {
+  const db = await connectToDatabase();
+  return await db.collection('transaction').find({ 
+    jobId: new ObjectId(jobId) 
+  }).toArray();
+};
+
+export const getTransactionById = async (id) => {
+  const db = await connectToDatabase();
+  return await db.collection('transaction').findOne({ 
+    _id: new ObjectId(id) 
+  });
+};
+
+export const createTransaction = async (transactionData) => {
+  const db = await connectToDatabase();
+  const result = await db.collection('transaction').insertOne(transactionData);
+  return await db.collection('transaction').findOne({ 
+    _id: result.insertedId 
+  });
+};
+
+export const updateTransactionStatus = async (id, status) => {
+  const db = await connectToDatabase();
+  const updateData = {
+    status: status,
+    updatedAt: new Date()
+  };
+  
+  const result = await db.collection('transaction').findOneAndUpdate(
+    { _id: new ObjectId(id) },
+    { $set: updateData },
+    { returnDocument: 'after' }
+  );
+  
+  return result;
+};
+
+// Job database functions
+export const getAllJobs = async () => {
+  const db = await connectToDatabase();
+  return await db.collection('job').find({}).toArray();
+};
+
+export const getJobById = async (jobId) => {
+  const db = await connectToDatabase();
+  return await db.collection('job').findOne({ 
+    _id: new ObjectId(jobId) 
+  });
+};
+
+export const createJob = async (jobData) => {
+  const db = await connectToDatabase();
+  const newJob = {
+    customerId: new ObjectId(jobData.customerId),
+    providerId: jobData.providerId ? new ObjectId(jobData.providerId) : null,
+    serviceId: new ObjectId(jobData.serviceId),
+    address: jobData.address,
+    description: jobData.description,
+    status: 'pending',
+    scheduledDate: jobData.scheduledDate ? new Date(jobData.scheduledDate) : null,
+    completedDate: null,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  };
+  
+  const result = await db.collection('job').insertOne(newJob);
+  return await db.collection('job').findOne({ _id: result.insertedId });
+};
+
+export const updateJob = async (jobId, updateData) => {
+  const db = await connectToDatabase();
+  
+  // Handle ObjectId conversions
+  const processedData = {
+    ...updateData,
+    updatedAt: new Date()
+  };
+  
+  if (processedData.customerId) processedData.customerId = new ObjectId(processedData.customerId);
+  if (processedData.providerId) processedData.providerId = new ObjectId(processedData.providerId);
+  if (processedData.serviceId) processedData.serviceId = new ObjectId(processedData.serviceId);
+  if (processedData.scheduledDate) processedData.scheduledDate = new Date(processedData.scheduledDate);
+  if (processedData.completedDate) processedData.completedDate = new Date(processedData.completedDate);
+  
+  const result = await db.collection('job').findOneAndUpdate(
+    { _id: new ObjectId(jobId) },
+    { $set: processedData },
+    { returnDocument: 'after' }
+  );
+  
+  return result;
+};
+
+export const deleteJob = async (jobId) => {
+  const db = await connectToDatabase();
+  return await db.collection('job').deleteOne({ 
+    _id: new ObjectId(jobId) 
+  });
+};
+
+// Job Application database functions
+export const getAllJobApplications = async () => {
+  const db = await connectToDatabase();
+  return await db.collection('jobApplication').find({}).toArray();
+};
+
+export const getJobApplicationsByJobId = async (jobId) => {
+  const db = await connectToDatabase();
+  return await db.collection('jobApplication').find({ 
+    jobId: new ObjectId(jobId) 
+  }).toArray();
+};
+
+export const getJobApplicationById = async (id) => {
+  const db = await connectToDatabase();
+  return await db.collection('jobApplication').findOne({ 
+    _id: new ObjectId(id) 
+  });
+};
+
+export const createJobApplication = async (applicationData) => {
+  const db = await connectToDatabase();
+  const result = await db.collection('jobApplication').insertOne(applicationData);
+  return await db.collection('jobApplication').findOne({ 
+    _id: result.insertedId 
+  });
+};
+
+export const updateJobApplication = async (id, updateData) => {
+  const db = await connectToDatabase();
+  const result = await db.collection('jobApplication').findOneAndUpdate(
+    { _id: new ObjectId(id) },
+    { $set: updateData },
+    { returnDocument: 'after' }
+  );
+  return result.value;
+};
+
 export {ping, getUsers, addUser, getUserByEmail, updateUser, deleteUser, getClient, getDatabase, saveAuditLog, getUserById, getServices, getServiceById, addService, updateService, deleteService};
