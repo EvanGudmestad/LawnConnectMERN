@@ -29,20 +29,19 @@ export const auth = betterAuth({
         additionalFields: {
             role: {
                 type: "json",
-                required: false,
-                 defaultValue: ["customer"]
+                required: true,
+                defaultValue: ["customer"]
             },
             profile: {
                 type: "json",
-                required: false,
+                required: true,
                 defaultValue: {}
                 /* Polymorphic structure based on role:
                  * For CUSTOMER:
                  * {
-                 *   firstName: string,
-                 *   lastName: string,
+                 *   givenName: string,
+                 *   familyName: string,
                  *   phone: string,
-                 *   avatar: string,
                  *   address_history: [{ address, city, state, zip, isDefault, addedAt }],
                  *   preferences: { notifications, newsletter },
                  *   saved_providers: [ObjectId]
@@ -50,14 +49,10 @@ export const auth = betterAuth({
                  * 
                  * For PROVIDER:
                  * {
-                 *   firstName: string,
-                 *   lastName: string,
-                 *   phone: string,
-                 *   avatar: string,
                  *   company_name: string (required),
+                 *   phone: string,
                  *   bio: string,
                  *   stripe_connect_account_id: string (critical for payments),
-                 *   services: [ObjectId],
                  *   service_area: [{ city, state, radius }],
                  *   rating: number,
                  *   total_reviews: number,
