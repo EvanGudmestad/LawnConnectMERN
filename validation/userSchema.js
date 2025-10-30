@@ -34,7 +34,6 @@ const providerProfileSchema = Joi.object({
   company_name: Joi.string().required(),
   bio: Joi.string().allow('').optional(),
   stripe_connect_account_id: Joi.string().allow('', null).optional(),
-  services: Joi.array().items(Joi.string()).default([]), // Array of service ObjectIds
   service_area: Joi.array().items(
     Joi.object({
       city: Joi.string().required(),

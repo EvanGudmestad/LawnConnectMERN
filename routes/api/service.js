@@ -19,7 +19,7 @@ const router = express.Router();
 // Supports optional filters and pagination
 router.get('/', async (req, res) => {
   try {
-    const { page, limit, sortBy, sortDir, name, active, companyId, minPrice, maxPrice } = req.query;
+    const { page, limit, sortBy, sortDir, name, active, providerId, minPrice, maxPrice } = req.query;
 
     // Pagination
     const pageNum = parseInt(page) || 1;
@@ -35,8 +35,8 @@ router.get('/', async (req, res) => {
       if (active === 'true' || active === true) filter.active = true;
       if (active === 'false' || active === false) filter.active = false;
     }
-    if (companyId) {
-      try { filter.companyId = new ObjectId(companyId); } catch {}
+    if (providerId) {
+      try { filter.provider_id = new ObjectId(providerId); } catch {}
     }
     if (minPrice || maxPrice) {
       filter.price = {};
@@ -77,12 +77,13 @@ router.get('/:id', validId('id'), async (req, res) => {
 router.post('/', isAuthenticated, async (req, res) => {
   try {
     const service = req.body || {};
+    const user = req.user;
     const now = new Date();
     service.createdAt = now;
     service.updatedAt = now;
-    service.createdBy = req.user?.email || 'system';
-    if (service.companyId && typeof service.companyId === 'string') {
-      try { service.companyId = new ObjectId(service.companyId); } catch {}
+    service.createdBy = user?.email || 'system';
+    if (user.id && typeof user.id === 'string') {
+      try { service.provider_id = new ObjectId(user.id); } catch {}
     }
 
     const result = await addService(service);
@@ -109,8 +110,8 @@ router.patch('/:id', isAuthenticated, validId('id'), async (req, res) => {
     const updates = { ...req.body };
     updates.updatedAt = new Date();
     updates.updatedBy = req.user?.email || 'system';
-    if (updates.companyId && typeof updates.companyId === 'string') {
-      try { updates.companyId = new ObjectId(updates.companyId); } catch {}
+    if (updates.provider_id && typeof updates.provider_id === 'string') {
+      try { updates.provider_id = new ObjectId(updates.provider_id); } catch {}
     }
     const result = await updateService(req.id, updates);
     if (result?.modifiedCount === 1) {
