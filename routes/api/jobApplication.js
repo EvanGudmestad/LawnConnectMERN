@@ -46,21 +46,21 @@ router.get('/:id', isAuthenticated, async (req, res) => {
 // Provider applies for a job
 router.post('/', isAuthenticated, async (req, res) => {
   try {
-    // Verify job exists and is open
     const job = await getJobById(req.body.jobId);
-    
-    if (!job) {
-      return res.status(404).json({ error: 'Job not found' });
-    }
-    
-    if (job.status !== 'open') {
+    if (!job) return res.status(404).json({ error: 'Job not found' });
+    if (job.status !== 'pending') {
       return res.status(400).json({ error: 'Job is no longer accepting applications' });
     }
-    
+
     const newApplication = {
-      jobId: new ObjectId(req.body.jobId),
-      providerId: new ObjectId(req.body.providerId),
+      jobId: req.body.jobId,
+      providerId: req.user.id,
+      // CHANGED: remove single serviceId; allow optional proposedServiceIds[]
+      proposedServiceIds: Array.isArray(req.body.proposedServiceIds)
+        ? req.body.proposedServiceIds.map(id => new ObjectId(id))
+        : undefined,
       proposedPrice: req.body.proposedPrice,
+      proposedDate: req.body.proposedDate,
       estimatedDuration: req.body.estimatedDuration,
       message: req.body.message || '',
       status: 'pending',
@@ -69,13 +69,11 @@ router.post('/', isAuthenticated, async (req, res) => {
     };
     
     const createdApplication = await createJobApplication(newApplication);
-    
-    // Update job status to 'applied' if this is the first application
+
     if (job.status === 'open') {
       await updateJob(req.body.jobId, { status: 'applied' });
     }
-    
-    debugJobApp('Application created:', createdApplication._id);
+
     res.status(201).json(createdApplication);
   } catch (error) {
     debugJobApp('Error creating application:', error);
@@ -84,38 +82,34 @@ router.post('/', isAuthenticated, async (req, res) => {
 });
 
 // Customer accepts/rejects an application
-router.put('/:id/respond', isAuthenticated, async (req, res) => {
+router.patch('/:id/respond', isAuthenticated, async (req, res) => {
   try {
     const application = await getJobApplicationById(req.params.id);
-    
-    if (!application) {
-      return res.status(404).json({ error: 'Application not found' });
-    }
-    
+    if (!application) return res.status(404).json({ error: 'Application not found' });
+
     const newStatus = req.body.status; // 'accepted' or 'rejected'
-    
     if (!['accepted', 'rejected'].includes(newStatus)) {
       return res.status(400).json({ error: 'Invalid status' });
     }
-    
-    // Update application
-    const updateData = {
-      status: newStatus,
-      respondedAt: new Date()
-    };
-    
+
+    const updateData = { status: newStatus, respondedAt: new Date() };
     const updatedApplication = await updateJobApplication(req.params.id, updateData);
-    
-    // If accepted, update job and reject other applications
+
     if (newStatus === 'accepted') {
-      const job = await getJobById(application.jobId.toString());
-      
-      await updateJob(application.jobId.toString(), {
-        selectedProviderId: application.providerId,
-        status: 'assigned'
-      });
-      
-      // Reject all other pending applications
+      // CHANGED: don’t overwrite job.serviceIds unless app explicitly proposed them
+      const jobUpdate = {
+        providerId: application.providerId,
+        status: 'assigned',
+        scheduledDate: application.proposedDate,
+        agreedPrice: application.proposedPrice,
+        estimatedDuration: application.estimatedDuration
+      };
+      if (Array.isArray(application.proposedServiceIds) && application.proposedServiceIds.length) {
+        jobUpdate.serviceIds = application.proposedServiceIds;
+      }
+
+      await updateJob(application.jobId.toString(), jobUpdate);
+
       const allApplications = await getJobApplicationsByJobId(application.jobId.toString());
       for (const app of allApplications) {
         if (app._id.toString() !== req.params.id && app.status === 'pending') {
@@ -126,17 +120,16 @@ router.put('/:id/respond', isAuthenticated, async (req, res) => {
         }
       }
     }
-    
-    const logEntry = {
+
+    await saveAuditLog({
       timeStamp: new Date(),
       operation: "update",
       collection: "jobApplications",
       documentId: req.params.id,
       changes: updateData,
       performedBy: req.user.email
-    };
-    await saveAuditLog(logEntry);
-    
+    });
+
     res.status(200).json(updatedApplication);
   } catch (error) {
     debugJobApp('Error responding to application:', error);

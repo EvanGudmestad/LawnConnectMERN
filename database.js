@@ -185,12 +185,14 @@ export const getJobById = async (jobId) => {
 export const createJob = async (jobData) => {
   const db = await connectToDatabase();
   const newJob = {
-    customerId: new ObjectId(jobData.customerId),
+    customerId: jobData.customerId,
     providerId: jobData.providerId ? new ObjectId(jobData.providerId) : null,
-    serviceId: new ObjectId(jobData.serviceId),
+    serviceIds: Array.isArray(jobData.serviceIds) ? jobData.serviceIds.map(id => new ObjectId(id)) : [],
     address: jobData.address,
     description: jobData.description,
+    lotSquareFootage: jobData.lotSquareFootage,
     status: 'pending',
+    type: jobData.type,
     scheduledDate: jobData.scheduledDate ? new Date(jobData.scheduledDate) : null,
     completedDate: null,
     createdAt: new Date(),
@@ -212,7 +214,10 @@ export const updateJob = async (jobId, updateData) => {
   
   if (processedData.customerId) processedData.customerId = new ObjectId(processedData.customerId);
   if (processedData.providerId) processedData.providerId = new ObjectId(processedData.providerId);
-  if (processedData.serviceId) processedData.serviceId = new ObjectId(processedData.serviceId);
+  // CHANGED: convert serviceIds array
+  if (Array.isArray(processedData.serviceIds)) {
+    processedData.serviceIds = processedData.serviceIds.map(id => new ObjectId(id));
+  }
   if (processedData.scheduledDate) processedData.scheduledDate = new Date(processedData.scheduledDate);
   if (processedData.completedDate) processedData.completedDate = new Date(processedData.completedDate);
   
@@ -254,6 +259,7 @@ export const getJobApplicationById = async (id) => {
 
 export const createJobApplication = async (applicationData) => {
   const db = await connectToDatabase();
+  debugDb(`Creating job application with data: ${JSON.stringify(applicationData)}`);
   const result = await db.collection('jobApplication').insertOne(applicationData);
   return await db.collection('jobApplication').findOne({ 
     _id: result.insertedId 
@@ -270,4 +276,12 @@ export const updateJobApplication = async (id, updateData) => {
   return result.value;
 };
 
-export {ping, getUsers, addUser, getUserByEmail, updateUser, deleteUser, getClient, getDatabase, saveAuditLog, getUserById, getServices, getServiceById, addService, updateService, deleteService};
+async function getServiceByProviderId(providerId, serviceType) {
+  const db = await connectToDatabase();
+  return await db.collection('services').findOne({ 
+    providerId: new ObjectId(providerId),
+    serviceType: serviceType 
+  });
+}
+
+export {ping, getUsers, addUser, getUserByEmail, updateUser, deleteUser, getClient, getDatabase, saveAuditLog, getUserById, getServices, getServiceById, addService, updateService, deleteService, getServiceByProviderId};

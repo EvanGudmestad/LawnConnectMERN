@@ -33,7 +33,7 @@ export const auth = betterAuth({
                 defaultValue: ["customer"]
             },
             profile: {
-                type: "json",
+                type: "object",
                 required: true,
                 defaultValue: {}
                 /* Polymorphic structure based on role:

@@ -10,6 +10,7 @@ import {
 } from '../../database.js';
 import debug from 'debug';
 const debugJob = debug('app:job');
+import { hasRole } from '../../middleware/hasRole.js';
 
 const router = express.Router();
 
@@ -42,8 +43,9 @@ router.get('/:id', isAuthenticated, async (req, res) => {
 });
 
 // Create new job
-router.post('/', isAuthenticated, async (req, res) => {
+router.post('/', isAuthenticated, hasRole('customer'), async (req, res) => {
   try {
+    req.body.customerId = req.user.id; // Set customerId from authenticated user
     const createdJob = await createJob(req.body);
     res.status(201).json(createdJob);
   } catch (error) {
@@ -52,15 +54,17 @@ router.post('/', isAuthenticated, async (req, res) => {
   }
 });
 
-// Update job
+// Update job (owner-only)
 router.put('/:id', isAuthenticated, async (req, res) => {
   try {
-    const result = await updateJob(req.params.id, req.body);
-    
-    if (!result.value) {
-      return res.status(404).json({ error: 'Job not found' });
+    const existing = await getJobById(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Job not found' });
+    if (existing.customerId?.toString() !== req.user.id) {
+      return res.status(403).json({ error: 'Forbidden' });
     }
-    
+
+    const result = await updateJob(req.params.id, req.body);
+    if (!result.value) return res.status(404).json({ error: 'Job not found' });
     res.status(200).json(result.value);
   } catch (error) {
     debugJob('Error updating job:', error);
@@ -68,15 +72,20 @@ router.put('/:id', isAuthenticated, async (req, res) => {
   }
 });
 
-// Delete job
+// Delete job (owner-only)
 router.delete('/:id', isAuthenticated, async (req, res) => {
   try {
+    const existing = await getJobById(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Job not found' });
+    if (existing.customerId?.toString() !== req.user.id) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
     const result = await deleteJob(req.params.id);
-    
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Job not found' });
     }
-    
+
     const logEntry = {
       timeStamp: new Date(),
       operation: "delete",
@@ -85,7 +94,7 @@ router.delete('/:id', isAuthenticated, async (req, res) => {
       performedBy: req.user.email
     };
     await saveAuditLog(logEntry);
-    
+
     res.status(200).json({ message: 'Job deleted successfully' });
   } catch (error) {
     debugJob('Error deleting job:', error);
