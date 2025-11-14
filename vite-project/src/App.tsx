@@ -1,6 +1,5 @@
-
 import './App.css'
-import { LoginForm } from '@/components/login-form'
+import { CustomerRegistrationForm } from '@/components/customer-registration';
 import { authClient } from '@/lib/auth-client'
 import { Button } from './components/ui/button';
 function App() {
@@ -15,7 +14,7 @@ function App() {
     return (
       <div className="flex min-h-svh items-center justify-center px-4">
         <div className="w-full max-w-md">
-          <LoginForm />
+          <CustomerRegistrationForm />
         </div>
       </div>
     );
