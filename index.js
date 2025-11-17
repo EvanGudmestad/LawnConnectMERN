@@ -6,6 +6,11 @@ import cors from 'cors';
 const port = process.env.PORT || 8080;
 import { auth } from "./auth.js"; // Import your Better Auth instance
 import { toNodeHandler } from "better-auth/node";
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 
 app.use(express.urlencoded({ extended: true })); 
@@ -15,6 +20,7 @@ app.use(cors({
   credentials: true
 })); 
 app.use(express.static('vite-project/dist'));
+
 
 // Add better-auth handler - this handles all auth endpoints including cookies
 //Login: POST /api/auth/sign-in/email
@@ -29,6 +35,11 @@ app.use('/api/users', (await import('./routes/api/users.js')).usersRouter);
 app.use('/api/services', (await import('./routes/api/service.js')).serviceRouter);
 app.use('/api/transactions', (await import('./routes/api/transaction.js')).transactionRouter);
 app.use('/api/job-applications', (await import('./routes/api/jobApplication.js')).jobApplicationRouter);
+
+// Handle React routing - send all non-API requests to React
+app.use((req, res) => {
+  res.sendFile(path.join(__dirname, 'vite-project/dist/index.html'));
+});
 
 app.listen(port, () => {
   debugIndex(`Example app listening on port http://localhost:${port}`)
