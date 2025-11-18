@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import { authClient } from "@/lib/auth-client"
 import loginSchema from "@/schemas/loginSchema"
+import { useNavigate } from "react-router-dom";
 
 
 export function LoginForm({
@@ -29,6 +30,7 @@ export function LoginForm({
   const [password, setPassword] = useState("")
   const { signIn } = authClient;
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
 
 
@@ -53,6 +55,7 @@ export function LoginForm({
       onSuccess: () => {
         // User is automatically logged in, session cookie is set
         console.log("Login successful");
+        navigate("/");
 
         setError(null);
       },

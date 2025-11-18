@@ -18,10 +18,9 @@ const phoneValidator = z
 const customerRegistrationSchema = z
   .object({
     email: z.string().email("Invalid email address"),
+    name: z.string().min(2, "Name is required"),
     password: z.string().min(9, "Password must be at least 9 characters"),
     confirmPassword: z.string(),
-    given_name: z.string().min(2, "First name is required"),
-    family_name: z.string().min(2, "Last name is required"),
     phone: phoneValidator,
     address: z.string().min(5, "Address is required"),
   })

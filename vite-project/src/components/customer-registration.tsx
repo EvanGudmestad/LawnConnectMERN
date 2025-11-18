@@ -13,8 +13,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import customerRegistrationSchema from "@/schemas/customerRegistrationSchema";
 import { authClient } from "@/lib/auth-client";
+import { useNavigate } from "react-router-dom";
 
 export function CustomerRegistrationForm() {
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -28,8 +30,7 @@ export function CustomerRegistrationForm() {
       email: formData.get("email") as string,
       password: formData.get("password") as string,
       confirmPassword: formData.get("confirmPassword") as string,
-      given_name: formData.get("given_name") as string,
-      family_name: formData.get("family_name") as string,
+      name: formData.get("name") as string,
       phone: formData.get("phone") as string,
       address: formData.get("address") as string,
     };
@@ -43,7 +44,7 @@ export function CustomerRegistrationForm() {
         {
           email: validated.email,
           password: validated.password,
-          name: `${validated.given_name} ${validated.family_name}`,
+          name: validated.name,
         },
         {
           onRequest: (ctx) => {
@@ -58,8 +59,6 @@ export function CustomerRegistrationForm() {
               ...bodyData,
               role: ["customer"],
               profile: {
-                given_name: validated.given_name,
-                family_name: validated.family_name,
                 phone: validated.phone,
                 address_history: [validated.address],
               },
@@ -81,8 +80,8 @@ export function CustomerRegistrationForm() {
       console.log("Registration successful:", result);
 
       // Better Auth automatically sets session cookies
-      // Redirect to dashboard
-      window.location.href = "/";
+      // Redirect to home page after successful registration
+      navigate("/");
     } catch (error) {
       console.error("Registration error:", error);
 
@@ -115,22 +114,17 @@ export function CustomerRegistrationForm() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {/* Name Fields */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="given_name">First Name</Label>
-              <Input id="given_name" name="given_name" placeholder="John" />
-              {errors.given_name && (
-                <p className="text-sm text-destructive">{errors.given_name}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="family_name">Last Name</Label>
-              <Input id="family_name" name="family_name" placeholder="Doe" />
-              {errors.family_name && (
-                <p className="text-sm text-destructive">{errors.family_name}</p>
-              )}
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="name">Full Name</Label>
+            <Input
+              id="name"
+              name="name"
+              type="text"
+              placeholder="John Doe"
+            />
+            {errors.name && (
+              <p className="text-sm text-destructive">{errors.name}</p>
+            )}
           </div>
 
           {/* Email */}

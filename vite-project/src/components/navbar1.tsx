@@ -122,8 +122,8 @@ const Navbar1 = ({
       ],
     },
     {
-      title: "Pricing",
-      url: "#",
+      title: "User List",
+      url: "/user-list",
     },
     {
       title: "Blog",
