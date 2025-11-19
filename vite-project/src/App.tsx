@@ -1,6 +1,6 @@
 import './App.css'
 // import { CustomerRegistrationForm } from '@/components/customer-registration';
-// import { authClient } from '@/lib/auth-client'
+//import { authClient } from '@/lib/auth-client'
 // import { Button } from './components/ui/button';
 import AppLayout from '@/components/layouts/app-layout';
 import {Routes, Route} from 'react-router-dom';
@@ -11,6 +11,7 @@ import { UserList } from '@/components/user-list';
 import { UserEditor } from '@/components/user-editor';
 
 function App() {
+
   return (
       <Routes>
         <Route path="/" element={<AppLayout />}>
@@ -22,7 +23,6 @@ function App() {
         </Route>
       </Routes>
   );
-//     const { data: session, isPending } = authClient.useSession();
 
 //   if (isPending) {
 //     return <div>Loading...</div>;

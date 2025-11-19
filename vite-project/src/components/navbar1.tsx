@@ -1,4 +1,7 @@
-import { Book, Menu, Sunset, Trees, Zap } from "lucide-react";
+import { Book, Menu, Trees, Zap } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { authClient } from "@/lib/auth-client";
+import type { Session } from "better-auth/types";
 
 import {
   Accordion,
@@ -29,6 +32,23 @@ interface MenuItem {
   description?: string;
   icon?: React.ReactNode;
   items?: MenuItem[];
+  requiredRole?: string | string[]; // Add role requirement
+}
+
+// Extend the User type to include role field
+interface ExtendedUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string[];
+  image?: string;
+  emailVerified?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+interface ExtendedSession extends Omit<Session, 'user'> {
+  user: ExtendedUser;
 }
 
 interface Navbar1Props {
@@ -53,81 +73,48 @@ interface Navbar1Props {
 
 const Navbar1 = ({
   logo = {
-    url: "https://www.shadcnblocks.com",
+    url: "/",
     src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/shadcnblockscom-icon.svg",
-    alt: "logo",
-    title: "Shadcnblocks.com",
+    alt: "LawnConnect Logo",
+    title: "LawnConnect",
   },
   menu = [
     { title: "Home", url: "/" },
     {
-      title: "Products",
+      title: "Services",
       url: "#",
       items: [
         {
-          title: "Blog",
-          description: "The latest industry news, updates, and info",
-          icon: <Book className="size-5 shrink-0" />,
-          url: "#",
-        },
-        {
-          title: "Company",
-          description: "Our mission is to innovate and empower the world",
+          title: "Browse Services",
+          description: "Find lawn care services in your area",
           icon: <Trees className="size-5 shrink-0" />,
-          url: "#",
+          url: "/services",
         },
         {
-          title: "Careers",
-          description: "Browse job listing and discover our workspace",
-          icon: <Sunset className="size-5 shrink-0" />,
-          url: "#",
-        },
-        {
-          title: "Support",
-          description:
-            "Get in touch with our support team or visit our community forums",
-          icon: <Zap className="size-5 shrink-0" />,
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Resources",
-      url: "#",
-      items: [
-        {
-          title: "Help Center",
-          description: "Get all the answers you need right here",
-          icon: <Zap className="size-5 shrink-0" />,
-          url: "#",
-        },
-        {
-          title: "Contact Us",
-          description: "We are here to help you with any questions you have",
-          icon: <Sunset className="size-5 shrink-0" />,
-          url: "#",
-        },
-        {
-          title: "Status",
-          description: "Check the current status of our services and APIs",
-          icon: <Trees className="size-5 shrink-0" />,
-          url: "#",
-        },
-        {
-          title: "Terms of Service",
-          description: "Our terms and conditions for using our services",
+          title: "My Jobs",
+          description: "View and manage your job requests",
           icon: <Book className="size-5 shrink-0" />,
-          url: "#",
+          url: "/jobs",
+          requiredRole: ["customer", "admin"],
+        },
+        {
+          title: "Available Jobs",
+          description: "Browse and apply to available jobs",
+          icon: <Zap className="size-5 shrink-0" />,
+          url: "/available-jobs",
+          requiredRole: "contractor",
         },
       ],
     },
     {
       title: "User List",
       url: "/user-list",
+      requiredRole: "admin",
     },
     {
-      title: "Blog",
-      url: "#",
+      title: "Dashboard",
+      url: "/dashboard",
+      requiredRole: ["customer", "contractor", "admin"],
     },
   ],
   auth = {
@@ -135,6 +122,33 @@ const Navbar1 = ({
     signup: { title: "Sign up", url: "/signup" },
   },
 }: Navbar1Props) => {
+  const { data: session, isPending } = authClient.useSession();
+  const navigate = useNavigate();
+
+  // Cast session to include role field
+  const extendedSession = session as ExtendedSession | null;
+
+   // Add this to debug
+  console.log('Session data:', session);
+  console.log('Extended session:', extendedSession);
+  
+  // Helper function to check if user has required role
+  const hasRole = (requiredRole?: string | string[]) => {
+    if (!requiredRole || !extendedSession?.user?.role) return true;
+    const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+    return roles.some((role) => extendedSession.user.role.includes(role));
+  };
+
+  // Filter menu items based on user roles
+  const filteredMenu = menu.filter((item) => {
+    if (!extendedSession && item.requiredRole) return false;
+    return hasRole(item.requiredRole);
+  });
+
+  const handleSignOut = async () => {
+    await authClient.signOut();
+    navigate("/");
+  };
   return (
     <section className="py-4">
       <div className="container">
@@ -155,18 +169,33 @@ const Navbar1 = ({
             <div className="flex items-center">
               <NavigationMenu>
                 <NavigationMenuList>
-                  {menu.map((item) => renderMenuItem(item))}
+                  {filteredMenu.map((item) => renderMenuItem(item, extendedSession))}
                 </NavigationMenuList>
               </NavigationMenu>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button asChild variant="outline" size="sm">
-              <a href={auth.login.url}>{auth.login.title}</a>
-            </Button>
-            <Button asChild size="sm">
-              <a href={auth.signup.url}>{auth.signup.title}</a>
-            </Button>
+          <div className="flex items-center gap-3">
+            {isPending ? (
+              <span className="text-sm">Loading...</span>
+            ) : extendedSession ? (
+              <>
+                <span className="text-sm font-medium">
+                  Welcome, {extendedSession.user.name || extendedSession.user.email}
+                </span>
+                <Button variant="outline" size="sm" onClick={handleSignOut}>
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button asChild variant="outline" size="sm">
+                  <a href={auth.login.url}>{auth.login.title}</a>
+                </Button>
+                <Button asChild size="sm">
+                  <a href={auth.signup.url}>{auth.signup.title}</a>
+                </Button>
+              </>
+            )}
           </div>
         </nav>
 
@@ -205,16 +234,36 @@ const Navbar1 = ({
                     collapsible
                     className="flex w-full flex-col gap-4"
                   >
-                    {menu.map((item) => renderMobileMenuItem(item))}
+                    {filteredMenu.map((item) => renderMobileMenuItem(item, extendedSession))}
                   </Accordion>
 
                   <div className="flex flex-col gap-3">
-                    <Button asChild variant="outline">
-                      <a href={auth.login.url}>{auth.login.title}</a>
-                    </Button>
-                    <Button asChild>
-                      <a href={auth.signup.url}>{auth.signup.title}</a>
-                    </Button>
+                    {isPending ? (
+                      <span className="text-sm">Loading...</span>
+                    ) : extendedSession ? (
+                      <>
+                        <div className="border-b pb-3">
+                          <p className="text-sm font-medium">
+                            {extendedSession.user.name || extendedSession.user.email}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {extendedSession.user.email}
+                          </p>
+                        </div>
+                        <Button variant="outline" onClick={handleSignOut}>
+                          Sign Out
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button asChild variant="outline">
+                          <a href={auth.login.url}>{auth.login.title}</a>
+                        </Button>
+                        <Button asChild>
+                          <a href={auth.signup.url}>{auth.signup.title}</a>
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               </SheetContent>
@@ -226,13 +275,24 @@ const Navbar1 = ({
   );
 };
 
-const renderMenuItem = (item: MenuItem) => {
+const renderMenuItem = (item: MenuItem, session: ExtendedSession | null) => {
   if (item.items) {
+    // Filter sub-items based on role
+    const filteredSubItems = item.items.filter((subItem) => {
+      if (!session && subItem.requiredRole) return false;
+      if (!subItem.requiredRole) return true;
+      const roles = Array.isArray(subItem.requiredRole) ? subItem.requiredRole : [subItem.requiredRole];
+      return roles.some((role) => session?.user?.role?.includes(role));
+    });
+
+    // Don't render menu item if no sub-items are visible
+    if (filteredSubItems.length === 0) return null;
+
     return (
       <NavigationMenuItem key={item.title}>
         <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
         <NavigationMenuContent className="bg-popover text-popover-foreground">
-          {item.items.map((subItem) => (
+          {filteredSubItems.map((subItem) => (
             <NavigationMenuLink asChild key={subItem.title} className="w-80">
               <SubMenuLink item={subItem} />
             </NavigationMenuLink>
@@ -254,15 +314,26 @@ const renderMenuItem = (item: MenuItem) => {
   );
 };
 
-const renderMobileMenuItem = (item: MenuItem) => {
+const renderMobileMenuItem = (item: MenuItem, session: ExtendedSession | null) => {
   if (item.items) {
+    // Filter sub-items based on role
+    const filteredSubItems = item.items.filter((subItem) => {
+      if (!session && subItem.requiredRole) return false;
+      if (!subItem.requiredRole) return true;
+      const roles = Array.isArray(subItem.requiredRole) ? subItem.requiredRole : [subItem.requiredRole];
+      return roles.some((role) => session?.user?.role?.includes(role));
+    });
+
+    // Don't render menu item if no sub-items are visible
+    if (filteredSubItems.length === 0) return null;
+
     return (
       <AccordionItem key={item.title} value={item.title} className="border-b-0">
         <AccordionTrigger className="text-md py-0 font-semibold hover:no-underline">
           {item.title}
         </AccordionTrigger>
         <AccordionContent className="mt-2">
-          {item.items.map((subItem) => (
+          {filteredSubItems.map((subItem) => (
             <SubMenuLink key={subItem.title} item={subItem} />
           ))}
         </AccordionContent>

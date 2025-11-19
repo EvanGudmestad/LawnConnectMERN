@@ -36,29 +36,7 @@ export const auth = betterAuth({
                 type: "object",
                 required: true,
                 defaultValue: {}
-                /* Polymorphic structure based on role:
-                 * For CUSTOMER:
-                 * {
-                 *   givenName: string,
-                 *   familyName: string,
-                 *   phone: string,
-                 *   address_history: [{ address, city, state, zip, isDefault, addedAt }],
-                 *   preferences: { notifications, newsletter },
-                 *   saved_providers: [ObjectId]
-                 * }
-                 * 
-                 * For PROVIDER:
-                 * {
-                 *   company_name: string (required),
-                 *   phone: string,
-                 *   bio: string,
-                 *   stripe_connect_account_id: string (critical for payments),
-                 *   service_area: [{ city, state, radius }],
-                 *   rating: number,
-                 *   total_reviews: number,
-                 *   verified: boolean
-                 * }
-                 */
+               
             }
         }
     }
