@@ -1,4 +1,4 @@
-import { Book, Menu, Trees, Zap } from "lucide-react";
+import { Menu} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { authClient } from "@/lib/auth-client";
 import type { Session } from "better-auth/types";
@@ -81,35 +81,19 @@ const Navbar1 = ({
   menu = [
     { title: "Home", url: "/" },
     {
-      title: "Services",
-      url: "#",
-      items: [
-        {
-          title: "Browse Services",
-          description: "Find lawn care services in your area",
-          icon: <Trees className="size-5 shrink-0" />,
-          url: "/services",
-        },
-        {
-          title: "My Jobs",
-          description: "View and manage your job requests",
-          icon: <Book className="size-5 shrink-0" />,
-          url: "/jobs",
-          requiredRole: ["customer", "admin"],
-        },
-        {
-          title: "Available Jobs",
-          description: "Browse and apply to available jobs",
-          icon: <Zap className="size-5 shrink-0" />,
-          url: "/available-jobs",
-          requiredRole: "contractor",
-        },
-      ],
-    },
-    {
       title: "User List",
       url: "/user-list",
       requiredRole: "admin",
+    },
+    {
+      title:"Create A Job",
+      url:"/create-job",
+      requiredRole: ["customer", "admin"],
+    },
+    {
+      title:"Bid A Job",
+      url:"/bid-job",
+      requiredRole: ["contractor", "admin"],
     },
     {
       title: "Dashboard",
@@ -127,10 +111,6 @@ const Navbar1 = ({
 
   // Cast session to include role field
   const extendedSession = session as ExtendedSession | null;
-
-   // Add this to debug
-  console.log('Session data:', session);
-  console.log('Extended session:', extendedSession);
   
   // Helper function to check if user has required role
   const hasRole = (requiredRole?: string | string[]) => {
