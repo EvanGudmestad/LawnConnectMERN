@@ -9,19 +9,32 @@ import { LoginForm } from '@/components/login-form';
 import { CustomerRegistrationForm } from '@/components/customer-registration';
 import { UserList } from '@/components/user-list';
 import { UserEditor } from '@/components/user-editor';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+
 
 function App() {
-
+  function showError(message: string) {
+    toast(message, { type: 'error', position: 'bottom-right' });
+  }
+  function showSuccess(message: string) {
+    toast(message, { type: 'success', position: 'bottom-right' });
+  }
   return (
-    <Routes>
-      <Route path="/" element={<AppLayout />}>
-        <Route index element={<LawnConnectLanding />} />
-        <Route path="/login" element={<LoginForm />} />
-        <Route path="/signup" element={<CustomerRegistrationForm />} />
-        <Route path="/user-list" element={<UserList />} />
-        <Route path="/users/:userId/edit" element={<UserEditor />} />
-      </Route>
-    </Routes>
+    <>
+      <ToastContainer aria-label="toast" />
+      <Routes>
+        <Route path="/" element={<AppLayout />}>
+          <Route index element={<LawnConnectLanding />} />
+          <Route path="/login" element={<LoginForm />} />
+          <Route path="/signup" element={<CustomerRegistrationForm />} />
+          <Route path="/user-list" element={<UserList />} />
+          <Route path="/users/:userId/edit" element={<UserEditor showError={showError} showSuccess={showSuccess} />} />
+          {/* <Route path="*" element={<NotFound />} /> */}
+        </Route>
+      </Routes>
+    </>
   );
 
   //   if (isPending) {

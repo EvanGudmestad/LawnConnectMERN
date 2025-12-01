@@ -7,15 +7,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { z } from "zod";
+import userEditSchema from "@/schemas/userEditSchema";
 
-export function UserEditor() {
+export function UserEditor({ showError, showSuccess }: { showError: (message: string) => void; showSuccess: (message: string) => void }) {
   const { userId } = useParams();
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
   const [formData, setFormData] = useState({
     email: "",
     name: "",
@@ -60,12 +63,26 @@ export function UserEditor() {
     e.preventDefault();
     setSaving(true);
     setError(null);
+    setValidationErrors({});
 
     try {
-      await axios.patch(`${import.meta.env.VITE_API_URL}/users/${userId}`, formData);
+      const validatedData = userEditSchema.parse(formData);
+      await axios.patch(`${import.meta.env.VITE_API_URL}/users/${userId}`, validatedData);
+      showSuccess("User updated successfully");
       navigate("/user-list");
     } catch (err) {
-      setError("Failed to update user");
+      if (err instanceof z.ZodError) {
+        const fieldErrors: Record<string, string> = {};
+        err.issues.forEach((issue) => {
+          if (issue.path.length > 0) {
+            fieldErrors[issue.path[0] as string] = issue.message;
+          }
+        });
+        setValidationErrors(fieldErrors);
+        setSaving(false);
+        return;
+      }
+      showError("Failed to update user");
       setSaving(false);
       console.error("Error updating user:", err);
     }
@@ -120,8 +137,10 @@ export function UserEditor() {
                 type="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                required
               />
+              {validationErrors.email && (
+                <p className="text-sm text-red-500">{validationErrors.email}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -133,9 +152,10 @@ export function UserEditor() {
                 value={formData.name}
                 onChange={handleInputChange}
               />
+              {validationErrors.name && (
+                <p className="text-sm text-red-500">{validationErrors.name}</p>
+              )}
             </div>
-
-           
 
             <div className="space-y-2">
               <Label>Roles</Label>
@@ -158,6 +178,9 @@ export function UserEditor() {
                   </div>
                 ))}
               </div>
+              {validationErrors.role && (
+                <p className="text-sm text-red-500">{validationErrors.role}</p>
+              )}
             </div>
           </CardContent>
 
