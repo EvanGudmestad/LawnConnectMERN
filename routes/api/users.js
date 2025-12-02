@@ -128,7 +128,7 @@ router.patch('/me', isAuthenticated, async (req, res) => {
 });
 
 
-router.patch('/:id', validId('id'), async (req, res) => {
+router.patch('/:id', validId('id'), validate(updateUserSchema), async (req, res) => {
   const userId = req.id //Object Id
   const updatedData = req.body;
   debugUsers(`Updating user with IDD: ${userId} with data: ${JSON.stringify(updatedData)}`);

@@ -12,12 +12,21 @@ const validate = (schema) => (req, res, next) => {
 
        if(error){
         const errorMessage = error.details.map(detail => detail.message);
+        
+        const fields = {};
+
+        error.details.forEach(detail => {
+      if (detail.path.length > 0) {
+        fields[detail.path[0]] = detail.message;
+      }
+    });
 
         return res.status(400).json({
           status: 'error',
           type:"ValidationFailed",
           message:"Invalid data submitted.  See details for errors.",
-          details: errorMessage
+          details: errorMessage,
+          fields: fields
         });
        }
 

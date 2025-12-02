@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios, {AxiosError} from "axios";
 import type { User } from "@/types/user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,6 +82,24 @@ export function UserEditor({ showError, showSuccess }: { showError: (message: st
         setSaving(false);
         return;
       }
+
+      const axiosError = err as AxiosError<{
+        type: string;
+        fields: Record<string, string>;
+        message: string;
+      }>;
+
+          if (
+        axiosError.response?.status === 400 &&
+        axiosError.response?.data?.type === "ValidationFailed"
+      ) {
+        setValidationErrors(axiosError.response.data.fields || {});
+        //showError(axiosError.response.data.message || "Validation failed");
+        setSaving(false);
+        return;
+      }
+
+
       showError("Failed to update user");
       setSaving(false);
       console.error("Error updating user:", err);

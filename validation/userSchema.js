@@ -66,12 +66,9 @@ const registerSchema = Joi.object({
 }).required();
 
 const updateUserSchema = Joi.object({
-  email: Joi.string().email().optional(),
-  password: Joi.string().min(8).optional(),
-  confirmPassword: Joi.string().valid(Joi.ref('password')).optional(),
-  role: Joi.string().valid('customer', 'provider').optional(),
-  profile: Joi.object().optional(), // Allow any profile updates
-  createdAt: Joi.date().optional()
+    email: Joi.string().email().required(),
+    name: Joi.string().min(2).required(),
+    role: Joi.array().items(Joi.string().valid("customer", "contractor", "admin")).min(1).required(),
 }).min(1).required();
 
 export { registerSchema, updateUserSchema };
