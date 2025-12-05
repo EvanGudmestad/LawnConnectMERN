@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios, {AxiosError} from "axios";
+import {AxiosError} from "axios";
+import api from "@/lib/api";
 import type { User } from "@/types/user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +29,7 @@ export function UserEditor({ showError, showSuccess }: { showError: (message: st
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/users/${userId}`);
+        const response = await api.get(`${import.meta.env.VITE_API_URL}/users/${userId}`);
         setUser(response.data);
         setFormData({
           email: response.data.email || "",
@@ -67,7 +68,7 @@ export function UserEditor({ showError, showSuccess }: { showError: (message: st
 
     try {
       const validatedData = userEditSchema.parse(formData);
-      await axios.patch(`${import.meta.env.VITE_API_URL}/users/${userId}`, validatedData);
+      await api.patch(`${import.meta.env.VITE_API_URL}/users/${userId}`, validatedData);
       showSuccess("User updated successfully");
       navigate("/user-list");
     } catch (err) {

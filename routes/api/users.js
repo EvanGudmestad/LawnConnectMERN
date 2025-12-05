@@ -128,7 +128,7 @@ router.patch('/me', isAuthenticated, async (req, res) => {
 });
 
 
-router.patch('/:id', validId('id'), validate(updateUserSchema), async (req, res) => {
+router.patch('/:id', isAuthenticated, validId('id'), validate(updateUserSchema), async (req, res) => {
   const userId = req.id //Object Id
   const updatedData = req.body;
   debugUsers(`Updating user with IDD: ${userId} with data: ${JSON.stringify(updatedData)}`);
@@ -141,7 +141,7 @@ router.patch('/:id', validId('id'), validate(updateUserSchema), async (req, res)
   }
 });
 
-router.delete('/:id', validId('id'), async (req,res) => {
+router.delete('/:id', isAuthenticated, validId('id'), async (req,res) => {
  const userId = req.id;
  const results = await deleteUser(userId);
  if (results.deletedCount === 1) {
