@@ -46,7 +46,10 @@ router.get('', async (req, res) => {
   const sortOptions = {
      email: { email: 1 },
      createdAt: { createdAt: 1 },
-     role: { role: 1 }
+     role: { role: 1 },
+     name: { name: 1 },
+    newest: { createdAt: -1 },
+    oldest: { createdAt: 1 }
   };
   const sort = sortOptions[sortBy] || {role:-1}; // Default to no sorting if sortBy is not provided or invalid
  
