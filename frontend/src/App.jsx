@@ -24,7 +24,7 @@ function App() {
       <nav className="navbar navbar-expand-lg navbar-custom fixed-top">
         <div className="container">
           <a className="navbar-brand fw-bold" href="#">
-            <i className="bi bi-scissors me-2"></i>
+            <i className="bi bi-cone me-2"></i>
             LawnConnect - Brody Was here!
           </a>
           <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
